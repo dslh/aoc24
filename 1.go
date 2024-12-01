@@ -40,6 +40,39 @@ func extract_lists(file *os.File) ([]int, []int, error) {
 	return a, b, nil
 }
 
+func part1(a []int, b []int) int {
+	sort.Ints(a)
+	sort.Ints(b)
+
+	total := 0
+	for i := 0; i < len(a); i++ {
+		diff := a[i] - b[i]
+		if diff < 0 {
+			diff = -diff
+		}
+		total += diff
+	}
+	return total
+}
+
+func frequencies(a []int) map[int]int {
+	freq := map[int]int{}
+	for _, v := range a {
+		freq[v]++
+	}
+	return freq
+}
+
+func part2(a []int, b []int) int {
+	freq_b := frequencies(b)
+
+	total := 0
+	for _, v := range a {
+		total += v * freq_b[v]
+	}
+	return total
+}
+
 func main() {
 	file, err := os.Open("input/1")
 	if err != nil {
@@ -54,16 +87,6 @@ func main() {
 		return
 	}
 
-	sort.Ints(a)
-	sort.Ints(b)
-
-	total := 0
-	for i := 0; i < len(a); i++ {
-		diff := a[i] - b[i]
-		if diff < 0 {
-			diff = -diff
-		}
-		total += diff
-	}
-	fmt.Println(total)
+	fmt.Println(part1(a, b))
+	fmt.Println(part2(a, b))
 }
