@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// Reads the input into one array of integers per line.
 func read_input() ([][]int, error) {
 	file, err := os.Open("input/2")
 	if err != nil {
@@ -38,6 +39,7 @@ func read_input() ([][]int, error) {
 	return reports, nil
 }
 
+// Returns an array of the differences between each pair of adjacent elements.
 func diffs(arr []int) []int {
 	diffs := []int{}
 	for i := 1; i < len(arr); i++ {
@@ -46,6 +48,9 @@ func diffs(arr []int) []int {
 	return diffs
 }
 
+// Returns true if the differences are all the same sign and false otherwise.
+// Also returns the index of the first difference that is not the same sign.
+// If all differences are the same sign, returns true and 0.
 func unidirectional(diffs []int) (bool, int) {
 	ascending := diffs[0] > 0
 	for i := 1; i < len(diffs); i++ {
@@ -57,6 +62,10 @@ func unidirectional(diffs []int) (bool, int) {
 	return true, 0
 }
 
+// Returns true if all differences are between -3 and 3 and false otherwise.
+// Also returns the index of the first difference that is not between -3 and 3.
+// Also returns false and the index of any element that is 0.
+// If all differences are between -3 and 3, returns true and 0.
 func gradual(diffs []int) (bool, int) {
 	for i, val := range diffs {
 		if val == 0 || val > 3 || val < -3 {
@@ -66,8 +75,9 @@ func gradual(diffs []int) (bool, int) {
 	return true, 0
 }
 
-func safe(arr []int) bool {
-	diffs := diffs(arr)
+// A report is "safe" if it is unidirectional and gradual.
+func safe(report []int) bool {
+	diffs := diffs(report)
 
 	unidirectional, _ := unidirectional(diffs)
 	if !unidirectional {
@@ -88,6 +98,7 @@ func part1(reports [][]int) int {
 	return total
 }
 
+// Returns a new array with the element at index i removed.
 func without(arr []int, i int) []int {
 	result := make([]int, 0, len(arr)-1)
 	result = append(result, arr[:i]...)
@@ -103,19 +114,26 @@ func safe_without(arr []int, i int) bool {
 	return safe(without(arr, i))
 }
 
+// Safe, but tolerant of a single bad level.
 func tolerant_safe(arr []int) bool {
 	diffs := diffs(arr)
 
 	unidirectional, i := unidirectional(diffs)
+	// We should be able to fix a fault by removing the level where the fault was found,
+	// or the level before or after it.
 	if !unidirectional {
+		// safe_without also checks for gradual() faults. If we can't fix this fault,
+		// there's no point trying to fix other faults.
 		return safe_without(arr, i-1) || safe_without(arr, i) || safe_without(arr, i+1)
 	}
 
+	// We also need to fix faults where the report is unidirectional but not gradual.
 	gradual, i := gradual(diffs[i:])
 	if !gradual {
 		return safe_without(arr, i-1) || safe_without(arr, i) || safe_without(arr, i+1)
 	}
 
+	// If we've made it this far, the report is safe.
 	return true
 }
 
