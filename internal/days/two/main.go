@@ -46,35 +46,83 @@ func diffs(arr []int) []int {
 	return diffs
 }
 
-func unidirectional(diffs []int) bool {
+func unidirectional(diffs []int) (bool, int) {
 	ascending := diffs[0] > 0
 	for i := 1; i < len(diffs); i++ {
 		ascends := diffs[i] > 0
 		if ascending != ascends {
-			return false
+			return false, i
 		}
 	}
-	return true
+	return true, 0
 }
 
-func gradual(diffs []int) bool {
-	for _, val := range diffs {
+func gradual(diffs []int) (bool, int) {
+	for i, val := range diffs {
 		if val == 0 || val > 3 || val < -3 {
-			return false
+			return false, i
 		}
 	}
-	return true
+	return true, 0
 }
 
 func safe(arr []int) bool {
 	diffs := diffs(arr)
-	return unidirectional(diffs) && gradual(diffs)
+
+	unidirectional, _ := unidirectional(diffs)
+	if !unidirectional {
+		return false
+	}
+
+	gradual, _ := gradual(diffs)
+	return gradual
 }
 
 func part1(reports [][]int) int {
 	total := 0
 	for _, report := range reports {
 		if safe(report) {
+			total++
+		}
+	}
+	return total
+}
+
+func without(arr []int, i int) []int {
+	result := make([]int, 0, len(arr)-1)
+	result = append(result, arr[:i]...)
+	result = append(result, arr[i+1:]...)
+	return result
+}
+
+func safe_without(arr []int, i int) bool {
+	if i < 0 || i >= len(arr) {
+		return false
+	}
+
+	return safe(without(arr, i))
+}
+
+func tolerant_safe(arr []int) bool {
+	diffs := diffs(arr)
+
+	unidirectional, i := unidirectional(diffs)
+	if !unidirectional {
+		return safe_without(arr, i-1) || safe_without(arr, i) || safe_without(arr, i+1)
+	}
+
+	gradual, i := gradual(diffs[i:])
+	if !gradual {
+		return safe_without(arr, i-1) || safe_without(arr, i) || safe_without(arr, i+1)
+	}
+
+	return true
+}
+
+func part2(reports [][]int) int {
+	total := 0
+	for _, report := range reports {
+		if tolerant_safe(report) {
 			total++
 		}
 	}
@@ -89,4 +137,5 @@ func Main() {
 	}
 
 	fmt.Println(part1(reports))
+	fmt.Println(part2(reports))
 }
