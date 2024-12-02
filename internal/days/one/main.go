@@ -1,4 +1,4 @@
-package main
+package one
 
 import (
 	"bufio"
@@ -73,7 +73,7 @@ func part2(a []int, b []int) int {
 	return total
 }
 
-func main() {
+func Main() {
 	file, err := os.Open("input/1")
 	if err != nil {
 		fmt.Println("Error reading file:", err)
