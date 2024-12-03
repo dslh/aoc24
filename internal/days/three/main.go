@@ -32,12 +32,23 @@ func parseMul(mul []string) (int, int, error) {
 	return a, b, nil
 }
 
-func Main() {
-	program, err := readInput()
-	if err != nil {
-		panic(err)
-	}
+func part1(program string) int {
+	total := 0
+	for _, match := range mulRegex.FindAllStringSubmatch(program, -1) {
+		if match[1] == "do()" || match[1] == "don't()" {
+			continue
+		}
 
+		a, b, err := parseMul(match)
+		if err != nil {
+			panic(err)
+		}
+		total += a * b
+	}
+	return total
+}
+
+func part2(program string) int {
 	total := 0
 	enabled := true
 	for _, match := range mulRegex.FindAllStringSubmatch(program, -1) {
@@ -57,5 +68,15 @@ func Main() {
 			total += a * b
 		}
 	}
-	fmt.Println(total)
+	return total
+}
+
+func Main() {
+	program, err := readInput()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(part1(program))
+	fmt.Println(part2(program))
 }
