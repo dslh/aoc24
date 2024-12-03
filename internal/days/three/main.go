@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-var mulRegex = regexp.MustCompile(`mul\((\d+),(\d+)\)`)
+var mulRegex = regexp.MustCompile(`(do\(\)|don't\(\)|mul\((\d+),(\d+)\))`)
 
 func readInput() (string, error) {
 	bytes, err := os.ReadFile("input/3")
@@ -18,14 +18,14 @@ func readInput() (string, error) {
 }
 
 func parseMul(mul []string) (int, int, error) {
-	if len(mul) != 3 {
-		return 0, 0, fmt.Errorf("expected 3 parts, got %d", len(mul))
+	if len(mul) != 4 {
+		return 0, 0, fmt.Errorf("expected 4 parts, got %d", len(mul))
 	}
-	a, err := strconv.Atoi(mul[1])
+	a, err := strconv.Atoi(mul[2])
 	if err != nil {
 		return 0, 0, err
 	}
-	b, err := strconv.Atoi(mul[2])
+	b, err := strconv.Atoi(mul[3])
 	if err != nil {
 		return 0, 0, err
 	}
@@ -39,12 +39,23 @@ func Main() {
 	}
 
 	total := 0
+	enabled := true
 	for _, match := range mulRegex.FindAllStringSubmatch(program, -1) {
-		a, b, err := parseMul(match)
-		if err != nil {
-			panic(err)
+		switch match[1] {
+		case "do()":
+			enabled = true
+		case "don't()":
+			enabled = false
+		default:
+			if !enabled {
+				continue
+			}
+			a, b, err := parseMul(match)
+			if err != nil {
+				panic(err)
+			}
+			total += a * b
 		}
-		total += a * b
 	}
 	fmt.Println(total)
 }
