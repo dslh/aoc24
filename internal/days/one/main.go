@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func extract_lists(file *os.File) ([]int, []int, error) {
+func extractLists(file *os.File) ([]int, []int, error) {
 	a := []int{}
 	b := []int{}
 
@@ -40,6 +40,14 @@ func extract_lists(file *os.File) ([]int, []int, error) {
 	return a, b, nil
 }
 
+func frequencies(a []int) map[int]int {
+	freq := map[int]int{}
+	for _, v := range a {
+		freq[v]++
+	}
+	return freq
+}
+
 func part1(a []int, b []int) int {
 	sort.Ints(a)
 	sort.Ints(b)
@@ -55,20 +63,12 @@ func part1(a []int, b []int) int {
 	return total
 }
 
-func frequencies(a []int) map[int]int {
-	freq := map[int]int{}
-	for _, v := range a {
-		freq[v]++
-	}
-	return freq
-}
-
 func part2(a []int, b []int) int {
-	freq_b := frequencies(b)
+	freqB := frequencies(b)
 
 	total := 0
 	for _, v := range a {
-		total += v * freq_b[v]
+		total += v * freqB[v]
 	}
 	return total
 }
@@ -81,7 +81,7 @@ func Main() {
 	}
 	defer file.Close()
 
-	a, b, err := extract_lists(file)
+	a, b, err := extractLists(file)
 	if err != nil {
 		fmt.Println("Error extracting lists:", err)
 		return

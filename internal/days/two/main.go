@@ -9,7 +9,7 @@ import (
 )
 
 // Reads the input into one array of integers per line.
-func read_input() ([][]int, error) {
+func readInput() ([][]int, error) {
 	file, err := os.Open("input/2")
 	if err != nil {
 		return nil, err
@@ -40,58 +40,50 @@ func read_input() ([][]int, error) {
 }
 
 // Returns an array of the differences between each pair of adjacent elements.
-func diffs(arr []int) []int {
-	diffs := []int{}
+func calculateDiffs(arr []int) []int {
+	differences := []int{}
 	for i := 1; i < len(arr); i++ {
-		diffs = append(diffs, arr[i]-arr[i-1])
+		differences = append(differences, arr[i]-arr[i-1])
 	}
-	return diffs
+	return differences
 }
 
-// Returns true if the differences are all the same sign and false otherwise.
-// Also returns the index of the first difference that is not the same sign.
-// If all differences are the same sign, returns true and 0.
-func unidirectional(diffs []int) (bool, int) {
-	ascending := diffs[0] > 0
-	for i := 1; i < len(diffs); i++ {
-		ascends := diffs[i] > 0
-		if ascending != ascends {
-			return false, i
-		}
+// Returns true if the differences are both unidirectional and gradual.
+// Returns false and the index where either condition fails.
+// Unidirectional means all differences have the same sign.
+// Gradual means all differences are between -3 and 3 (exclusive of 0).
+func checkDiffs(differences []int) (bool, int) {
+	if len(differences) == 0 {
+		return true, 0
 	}
-	return true, 0
-}
 
-// Returns true if all differences are between -3 and 3 and false otherwise.
-// Also returns the index of the first difference that is not between -3 and 3.
-// Also returns false and the index of any element that is 0.
-// If all differences are between -3 and 3, returns true and 0.
-func gradual(diffs []int) (bool, int) {
-	for i, val := range diffs {
+	ascending := differences[0] > 0
+
+	for i, val := range differences {
+		// Check gradual condition
 		if val == 0 || val > 3 || val < -3 {
 			return false, i
 		}
+
+		// Check unidirectional condition
+		if i > 0 && (val > 0) != ascending {
+			return false, i
+		}
 	}
 	return true, 0
 }
 
-// A report is "safe" if it is unidirectional and gradual.
-func safe(report []int) bool {
-	diffs := diffs(report)
-
-	unidirectional, _ := unidirectional(diffs)
-	if !unidirectional {
-		return false
-	}
-
-	gradual, _ := gradual(diffs)
-	return gradual
+// A report is "safe" if its differences are unidirectional and gradual.
+func isSafe(report []int) bool {
+	differences := calculateDiffs(report)
+	ok, _ := checkDiffs(differences)
+	return ok
 }
 
 func part1(reports [][]int) int {
 	total := 0
 	for _, report := range reports {
-		if safe(report) {
+		if isSafe(report) {
 			total++
 		}
 	}
@@ -99,48 +91,37 @@ func part1(reports [][]int) int {
 }
 
 // Returns a new array with the element at index i removed.
-func without(arr []int, i int) []int {
+func removeElement(arr []int, i int) []int {
 	result := make([]int, 0, len(arr)-1)
 	result = append(result, arr[:i]...)
 	result = append(result, arr[i+1:]...)
 	return result
 }
 
-func safe_without(arr []int, i int) bool {
+func isSafeWithout(arr []int, i int) bool {
 	if i < 0 || i >= len(arr) {
 		return false
 	}
 
-	return safe(without(arr, i))
+	return isSafe(removeElement(arr, i))
 }
 
 // Safe, but tolerant of a single bad level.
-func tolerant_safe(arr []int) bool {
-	diffs := diffs(arr)
+func isTolerantSafe(arr []int) bool {
+	differences := calculateDiffs(arr)
 
-	unidirectional, i := unidirectional(diffs)
-	// We should be able to fix a fault by removing the level where the fault was found,
-	// or the level before or after it.
-	if !unidirectional {
-		// safe_without also checks for gradual() faults. If we can't fix this fault,
-		// there's no point trying to fix other faults.
-		return safe_without(arr, i-1) || safe_without(arr, i) || safe_without(arr, i+1)
+	ok, i := checkDiffs(differences)
+	if !ok {
+		return isSafeWithout(arr, i-1) || isSafeWithout(arr, i) || isSafeWithout(arr, i+1)
 	}
 
-	// We also need to fix faults where the report is unidirectional but not gradual.
-	gradual, i := gradual(diffs[i:])
-	if !gradual {
-		return safe_without(arr, i-1) || safe_without(arr, i) || safe_without(arr, i+1)
-	}
-
-	// If we've made it this far, the report is safe.
 	return true
 }
 
 func part2(reports [][]int) int {
 	total := 0
 	for _, report := range reports {
-		if tolerant_safe(report) {
+		if isTolerantSafe(report) {
 			total++
 		}
 	}
@@ -148,7 +129,7 @@ func part2(reports [][]int) int {
 }
 
 func Main() {
-	reports, err := read_input()
+	reports, err := readInput()
 	if err != nil {
 		fmt.Println(err)
 		return
