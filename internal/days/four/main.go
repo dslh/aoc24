@@ -20,12 +20,19 @@ type direction struct {
 	y int
 }
 
+var diagonals = []direction{
+	{x: 1, y: 1},
+	{x: -1, y: -1},
+	{x: 1, y: -1},
+	{x: -1, y: 1},
+}
+
 var directions = []direction{
-	{x: 0, y: 1},
+	{x: 0, y: 1}, // orthogonal
 	{x: 1, y: 0},
 	{x: 0, y: -1},
 	{x: -1, y: 0},
-	{x: 1, y: 1},
+	{x: 1, y: 1}, // diagonal
 	{x: -1, y: -1},
 	{x: 1, y: -1},
 	{x: -1, y: 1},
@@ -33,6 +40,18 @@ var directions = []direction{
 
 func (p position) step(d direction, steps int) position {
 	return position{row: p.row + d.y*steps, col: p.col + d.x*steps}
+}
+
+func (d direction) reverse() direction {
+	return direction{x: -d.x, y: -d.y}
+}
+
+func (d direction) left() direction {
+	return direction{x: -d.y, y: d.x}
+}
+
+func (d direction) right() direction {
+	return direction{x: d.y, y: -d.x}
 }
 
 func loadWordSearch(path string) (*wordSearch, error) {
@@ -90,6 +109,28 @@ func part1(ws *wordSearch) int {
 	return count
 }
 
+func (ws *wordSearch) IsMasCross(pos position, dir direction) bool {
+	return ws.At(pos) == 'A' &&
+		ws.At(pos.step(dir, 1)) == 'S' &&
+		ws.At(pos.step(dir.left(), 1)) == 'S' &&
+		ws.At(pos.step(dir.right(), 1)) == 'M' &&
+		ws.At(pos.step(dir.reverse(), 1)) == 'M'
+}
+
+func part2(ws *wordSearch) int {
+	count := 0
+	for row := 1; row < ws.Height()-1; row++ {
+		for col := 1; col < ws.Width()-1; col++ {
+			for _, dir := range diagonals {
+				if ws.IsMasCross(position{row: row, col: col}, dir) {
+					count++
+				}
+			}
+		}
+	}
+	return count
+}
+
 func Main() {
 	ws, err := loadWordSearch("input/4")
 	if err != nil {
@@ -97,4 +138,5 @@ func Main() {
 	}
 
 	fmt.Println(part1(ws))
+	fmt.Println(part2(ws))
 }
