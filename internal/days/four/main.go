@@ -102,6 +102,7 @@ func part1(ws *wordSearch) int {
 			for _, dir := range directions {
 				if ws.IsXmas(position{row: row, col: col}, dir) {
 					count++
+					break
 				}
 			}
 		}
