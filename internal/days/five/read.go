@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"unicode"
 )
 
@@ -96,4 +97,25 @@ func readUpdates(reader *bufio.Reader) ([][]int, error) {
 		updates = append(updates, update)
 	}
 	return updates, nil
+}
+
+func readInput() ([]rule, [][]int, error) {
+	file, err := os.Open("input/5")
+	if err != nil {
+		return nil, nil, err
+	}
+	defer file.Close()
+
+	reader := bufio.NewReader(file)
+	rules, err := readRules(reader)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	updates, err := readUpdates(reader)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return rules, updates, nil
 }

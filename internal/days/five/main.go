@@ -1,14 +1,33 @@
 package five
 
 import (
-	"bufio"
 	"fmt"
-	"os"
+	"sort"
 )
 
 type rule struct {
 	before int
 	after  int
+}
+
+type ruleSet map[rule]struct{}
+
+func (rs ruleSet) Ordered(before int, after int) bool {
+	_, ok := rs[rule{before, after}]
+	return ok
+}
+func (rs ruleSet) Sort(update []int) {
+	sort.Slice(update, func(i, j int) bool {
+		return rs.Ordered(update[i], update[j])
+	})
+}
+
+func makeRuleSet(rules []rule) ruleSet {
+	ruleSet := make(ruleSet)
+	for _, rule := range rules {
+		ruleSet[rule] = struct{}{}
+	}
+	return ruleSet
 }
 
 func updateOrder(update []int) map[int]int {
@@ -27,7 +46,8 @@ func ruleMap(rules []rule) map[int][]rule {
 	return ruleMap
 }
 
-func correctOrder(updateOrder map[int]int, ruleMap map[int][]rule) bool {
+func correctOrder(update []int, ruleMap map[int][]rule) bool {
+	updateOrder := updateOrder(update)
 	for page, index := range updateOrder {
 		rules, exists := ruleMap[page]
 		if !exists {
@@ -51,38 +71,26 @@ func updateValue(update []int) int {
 	return update[i]
 }
 
-func part1(rules []rule, updates [][]int) int {
-	total := 0
+func Main() {
+	rules, updates, err := readInput()
+	if err != nil {
+		fmt.Println("Error reading input:", err)
+		return
+	}
+
+	part1 := 0
+	part2 := 0
 	ruleMap := ruleMap(rules)
+	ruleSet := makeRuleSet(rules)
 	for _, update := range updates {
-		updateOrder := updateOrder(update)
-		if correctOrder(updateOrder, ruleMap) {
-			total += updateValue(update)
+		if correctOrder(update, ruleMap) {
+			part1 += updateValue(update)
+		} else {
+			ruleSet.Sort(update)
+			part2 += updateValue(update)
 		}
 	}
-	return total
-}
 
-func Main() {
-	file, err := os.Open("input/5")
-	if err != nil {
-		fmt.Println("Error reading file:", err)
-		return
-	}
-	defer file.Close()
-
-	reader := bufio.NewReader(file)
-	rules, err := readRules(reader)
-	if err != nil {
-		fmt.Println("Error reading rules:", err)
-		return
-	}
-
-	updates, err := readUpdates(reader)
-	if err != nil {
-		fmt.Println("Error reading updates:", err)
-		return
-	}
-
-	fmt.Println(part1(rules, updates))
+	fmt.Println(part1)
+	fmt.Println(part2)
 }
