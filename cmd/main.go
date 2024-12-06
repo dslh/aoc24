@@ -4,6 +4,7 @@ import (
 	"aoc24/internal/days/five"
 	"aoc24/internal/days/four"
 	"aoc24/internal/days/one"
+	"aoc24/internal/days/six"
 	"aoc24/internal/days/three"
 	"aoc24/internal/days/two"
 	"fmt"
@@ -20,4 +21,6 @@ func main() {
 	four.Main()
 	fmt.Println("five")
 	five.Main()
+	fmt.Println("six")
+	six.Main()
 }
