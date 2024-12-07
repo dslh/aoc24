@@ -6,30 +6,14 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"unicode"
+
+	"aoc24/internal/common"
 )
 
 var ErrEmptyLine = errors.New("empty line")
 
-// Parse an integer from the reader.
-// Returns the integer and the next rune, or an error.
-func readInt(reader *bufio.Reader) (int, rune, error) {
-	var n int
-	for {
-		r, _, err := reader.ReadRune()
-		if err != nil {
-			return 0, 0, err
-		}
-		if unicode.IsDigit(r) {
-			n = n*10 + int(r-'0')
-		} else {
-			return n, r, nil
-		}
-	}
-}
-
 func readRule(reader *bufio.Reader) (rule, error) {
-	before, separator, err := readInt(reader)
+	before, separator, err := common.ReadInt(reader)
 	if err != nil {
 		return rule{}, err
 	}
@@ -40,7 +24,7 @@ func readRule(reader *bufio.Reader) (rule, error) {
 		return rule{}, fmt.Errorf("expected '|', got %c", separator)
 	}
 
-	after, newline, err := readInt(reader)
+	after, newline, err := common.ReadInt(reader)
 	if err != nil {
 		return rule{}, err
 	}
@@ -69,7 +53,7 @@ func readRules(reader *bufio.Reader) ([]rule, error) {
 func readUpdate(reader *bufio.Reader) ([]int, error) {
 	var updates []int
 	for {
-		n, separator, err := readInt(reader)
+		n, separator, err := common.ReadInt(reader)
 		if err != nil {
 			return nil, err
 		}
